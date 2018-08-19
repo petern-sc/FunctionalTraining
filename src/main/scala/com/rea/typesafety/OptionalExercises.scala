@@ -64,11 +64,17 @@ object OptionalExercises1 {
 
   val config = Map[String, String]("host" -> "rea.com", "port" -> "8080")
 
-  def getFromConfig(key: String): Option[String] = ???
+  def getFromConfig(key: String): Option[String] = config.get(key)
 
-  def lengthOfHost(): Option[Int] = ???
+  def lengthOfHost(): Option[Int] = getFromConfig(key = "host") match {
+    case Some(host) => Some(host.length())
+    case None => None
+  }
 
-  def portPlus1000(): Option[Int] = ???
+  def portPlus1000(): Option[Int] = getFromConfig(key = "port") match {
+    case Some(port) => Some(port.toInt + 1000)
+    case None => None
+  }
 }
 
 object OptionalExercises2 {
