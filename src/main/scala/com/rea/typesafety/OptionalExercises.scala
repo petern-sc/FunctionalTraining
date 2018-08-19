@@ -83,13 +83,49 @@ object OptionalExercises2 {
   val envs = Map("rea.com" -> "prod", "test.rea.com" -> "test", "amazon.com" -> "stage")
 
   // Should return the host string if successful or "couldn't resolve" if unsuccessful
-  def getEnvForHost(host: String): String = ???
+  //  def getEnvForHost(host: String): String = hosts.get(host) match {
+  //    case Some(host) => envs.get(host) match {
+  //      case Some(env) => env
+  //      case None => "couldn't resolve"
+  //    }
+  //    case None => "couldn't resolve"
+  //  }
+  //  def getFromEnv(host: String): Option[String] = envs.get(host)
+
+  def getEnvForHost(host: String): String = hosts.get(host).flatMap(envs.get) match {
+    case Some(env) => env
+    case None => "couldn't resolve"
+  }
 
   // See how many ways you can implement this.
   // Will either return "Connected to <rea host>" or "not connected"
-  def connectToReaHostsOnly(host: String): String = ???
+
+  /** attempt 1 **/
+  //  def connectToReaHostsOnly(host: String): String = hosts.get(host) match {
+  //    case Some(env) => reaHostsOnly(env = env)
+  //    case None => "not connected"
+  //  }
+  //
+  //  def reaHostsOnly(env: String): String = {
+  //    if (env contains "rea") {
+  //      createConnection(domain = env)
+  //    } else {
+  //      "not connected"
+  //    }
+  //  }
+
+
+  /** attempt 2 **/
+  def connectToReaHostsOnly(host: String): String = hosts.get(host).flatMap(isReaHost) match {
+    case Some(domain) => createConnection(domain)
+    case None => "not connected"
+  }
+
+  def isReaHost(env: String): Option[String] = if (env contains "rea") Some(env) else None
 
   def createConnection(domain: String): String = s"connected to $domain"
+
+  //  def connectToReaHostsOnly(host: String): String = ???
 }
 
 /**
