@@ -66,15 +66,11 @@ object OptionalExercises1 {
 
   def getFromConfig(key: String): Option[String] = config.get(key)
 
-  def lengthOfHost(): Option[Int] = getFromConfig(key = "host") match {
-    case Some(host) => Some(host.length())
-    case None => None
-  }
+  def lengthOfHost(): Option[Int] = getFromConfig(key = "host").map(_.length())
 
-  def portPlus1000(): Option[Int] = getFromConfig(key = "port") match {
-    case Some(port) => Some(port.toInt + 1000)
-    case None => None
-  }
+  def portPlus1000(): Option[Int] = getFromConfig(key = "port").map(_.toInt).map(_ + 1000)
+
+  def add1000(number: Int): Int = number + 1000
 }
 
 object OptionalExercises2 {
@@ -92,15 +88,15 @@ object OptionalExercises2 {
   //  }
   //  def getFromEnv(host: String): Option[String] = envs.get(host)
 
-  def getEnvForHost(host: String): String = hosts.get(host).flatMap(envs.get) match {
-    case Some(env) => env
-    case None => "couldn't resolve"
-  }
+  def getEnvForHost(host: String): String = hosts.get(host).flatMap(envs.get).getOrElse("couldn't resolve")// match {
+//    case Some(env) => env
+//    case None => "couldn't resolve"
+//  }
 
   // See how many ways you can implement this.
   // Will either return "Connected to <rea host>" or "not connected"
 
-  /** attempt 1 **/
+  /** 1 **/
   //  def connectToReaHostsOnly(host: String): String = hosts.get(host) match {
   //    case Some(env) => reaHostsOnly(env = env)
   //    case None => "not connected"
@@ -115,11 +111,13 @@ object OptionalExercises2 {
   //  }
 
 
-  /** attempt 2 **/
-  def connectToReaHostsOnly(host: String): String = hosts.get(host).flatMap(isReaHost) match {
-    case Some(domain) => createConnection(domain)
-    case None => "not connected"
-  }
+  /** 2 **/
+  def connectToReaHostsOnly(host: String): String = hosts.get(host).flatMap(isReaHost).map(createConnection).getOrElse("not connected")
+  def connectToReaHostsOnly2(host: String): String = hosts.get(host).filter(_.contains("rea")).map(createConnection).getOrElse("not connected")
+//  match {
+//    case Some(domain) => createConnection(domain)
+//    case None => "not connected"
+//  }
 
   def isReaHost(env: String): Option[String] = if (env contains "rea") Some(env) else None
 
@@ -147,19 +145,50 @@ object OptionalExercises3 {
 
   case object Nothing extends Maybe[Nothing]
 
-  def flatMap[A, B](m: Maybe[A])(f: A => Maybe[B]): Maybe[B] = ???
+  def flatMap[A, B](m: Maybe[A])(f: A => Maybe[B]): Maybe[B] = m match {
+    case Just(a) => f(a)
+    case Nothing => Nothing
+  }
 
-  def map[A, B](m: Maybe[A])(f: A => B): Maybe[B] = ???
+  def map[A, B](m: Maybe[A])(f: A => B): Maybe[B] = m match {
+    case Just(a) => Just(f(a))
+    case Nothing => Nothing
+  }
 
-  def fold[A, B](m: Maybe[A], default: => B, f: A => B): B = ???
+  def fold[A, B](m: Maybe[A], default: => B, f: A => B): B = m match {
+    case Just(a) => f(a)
+    case Nothing => default
+  }
 
-  def orElse[A](m: Maybe[A], otherwise: => Maybe[A]): Maybe[A] = ???
+  def orElse[A](m: Maybe[A], otherwise: => Maybe[A]): Maybe[A] = m match {
+    case b@Just(_) => b
+    case Nothing => otherwise
+  }
 
-  def orSome[A](m: Maybe[A], default: => A): A = ???
+  def orSome[A](m: Maybe[A], default: => A): A = m match {
+    case Just(a) => a
+    case Nothing => default
+  }
 
-  def map2[A, B, C](f: (A, B) => C)(m1: Maybe[A], m2: Maybe[B]): Maybe[C] = ???
+  def map2[A, B, C](f: (A, B) => C)(m1: Maybe[A], m2: Maybe[B]): Maybe[C] = m1 match {
+    case Just(a) => m2 match {
+      case Just(b) => Just(f(a,b))
+      case Nothing => Nothing
+    }
+    case Nothing => Nothing
+  }
 
-  def sequence[A](l: List[Maybe[A]]): Maybe[List[A]] = ???
+    def sequence[A](l: List[Maybe[A]]): Maybe[List[A]] = ???
+//  l match {
+////    case List(Nothing) => Nothing
+////    case List(Just(a)) => Just(List(a))
 
-  def ap[A, B](m1: Maybe[A], m2: Maybe[A => B]): Maybe[B] = ???
+
+  def ap[A, B](m1: Maybe[A], m2: Maybe[A => B]): Maybe[B] = m1 match {
+    case Just(a) => m2 match {
+      case Just(atob) => Just(atob(a))
+      case Nothing => Nothing
+    }
+    case Nothing => Nothing
+  }
 }
