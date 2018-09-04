@@ -184,11 +184,15 @@ object OptionalExercises3 {
 ////    case List(Just(a)) => Just(List(a))
 
 
-  def ap[A, B](m1: Maybe[A], m2: Maybe[A => B]): Maybe[B] = m1 match {
-    case Just(a) => m2 match {
-      case Just(atob) => Just(atob(a))
-      case Nothing => Nothing
-    }
-    case Nothing => Nothing
+//  def ap[A, B](m1: Maybe[A], m2: Maybe[A => B]): Maybe[B] = m1 match {
+//    case Just(a) => m2 match {
+//      case Just(atob) => Just(atob(a))
+//      case Nothing => Nothing
+//    }
+//    case Nothing => Nothing
+//  }
+  def ap[A, B](m1: Maybe[A], m2: Maybe[A => B]): Maybe[B] = m2 match {
+    case Just(f) => map(m1)(f)
+    case _ => Nothing
   }
 }
