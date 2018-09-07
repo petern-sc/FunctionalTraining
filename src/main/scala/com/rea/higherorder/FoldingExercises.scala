@@ -29,23 +29,10 @@ object FoldingExercises {
    * foldRight is the same as foldLeft, except it processes the list from right to left.
    */
   def foldRight[A, B](initialValue: B, list: List[A])(f: (A, B) => B): B = {
-//    def go(total: List[A], l: List[A]): List[A] = {
-//      l match {
-//        case a :: as => go(a :: total, as)
-//        case _ => total
-//      }
-//    }
-
-    val reversedList = foldLeft(Nil: List[A], list)((acc, n) => n :: acc)
-//    def goFold(initialValue: B, list: List[A])(f: (A,B) => B): B = {
-//      list match {
-//        case x :: xs => goFold(f(x, initialValue), xs)(f)
-//        case Nil => initialValue
-//      }
-//    }
-//
-//    goFold(initialValue, reversedList)(f)
-    foldLeft(initialValue, reversedList){(b,a) => f(a,b)}
+    list match {
+      case head :: tail => f(head, foldRight(initialValue, tail)(f))
+      case Nil => initialValue
+    }
   }
   /**
    * Remember these, from our recursion exercises?  They can all be implemented with either
@@ -59,7 +46,7 @@ object FoldingExercises {
   //Careful you'll need a type annotation on the initialValue field
   // If Nil = List[Nothing], why do we need a type annotation?
   def map[A, B](x: List[A])(f: A => B): List[B] =
-    foldRight(initialValue = Nil: List[B], list = x)((next, acc) => f(next) :: acc)
+    foldRight[A,List[B]](initialValue = Nil, list = x)((next, acc) => f(next) :: acc)
 
   def filter[A](x: List[A], f: A => Boolean): List[A] =
     foldRight(initialValue = Nil: List[A], list = x)((next, acc) => {
