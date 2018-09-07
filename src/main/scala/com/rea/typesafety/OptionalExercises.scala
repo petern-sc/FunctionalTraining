@@ -170,13 +170,33 @@ object OptionalExercises3 {
     case Nothing => default
   }
 
-  def map2[A, B, C](f: (A, B) => C)(m1: Maybe[A], m2: Maybe[B]): Maybe[C] = m1 match {
-    case Just(a) => m2 match {
-      case Just(b) => Just(f(a,b))
-      case Nothing => Nothing
+  def map2[A, B, C](f: (A, B) => C)(m1: Maybe[A], m2: Maybe[B]): Maybe[C] = {
+//    for {
+//      a <- m1
+//      b <- m2
+//    } yield f(a,b)
+
+//    val function2: Maybe[B => C] = map(m1)(a => f(a, _))
+//    val function3: Maybe[Any] = map(m2)(b => function2(b))
+
+    flatMap(m1)(a => map(m2)(b => f(a,b)))
+
+    val maybe: Maybe[(A, B)] = flatMap(m1) {
+      a =>
+        flatMap(m2) {
+          b => Just((a,b))
+        }
     }
-    case Nothing => Nothing
+    map(maybe){case (a,b) => f(a,b)}
   }
+
+//    m1 match {
+//    case Just(a) => m2 match {
+//      case Just(b) => Just(f(a,b))
+//      case Nothing => Nothing
+//    }
+//    case Nothing => Nothing
+//  }
 
     def sequence[A](l: List[Maybe[A]]): Maybe[List[A]] = ???
 //  l match {
