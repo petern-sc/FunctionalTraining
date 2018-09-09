@@ -190,27 +190,27 @@ object OptionalExercises3 {
     map(maybe){case (a,b) => f(a,b)}
   }
 
-//    m1 match {
-//    case Just(a) => m2 match {
-//      case Just(b) => Just(f(a,b))
-//      case Nothing => Nothing
+  def sequence[A](l: List[Maybe[A]]): Maybe[List[A]] = {
+    l.foldRight(Just(Nil): Maybe[List[A]])((maybeNext, maybeAcc) => {
+      flatMap(maybeNext)(next =>
+        map(maybeAcc)(list =>
+          next :: list))
+    })
+  }
+//    def miniSequence(list: List[Maybe[A]], acc: Maybe[List[A]]): Maybe[List[A]] = {
+//      list match {
+//        case head :: tail => miniSequence(tail, flatMap(head)(a => map(acc)(li => a :: li)))
+//        case Nil => acc
+//      }
 //    }
-//    case Nothing => Nothing
-//  }
+//    miniSequence(l, Just(Nil): Maybe[List[A]])
 
-    def sequence[A](l: List[Maybe[A]]): Maybe[List[A]] = ???
-//  l match {
-////    case List(Nothing) => Nothing
-////    case List(Just(a)) => Just(List(a))
-
-
-//  def ap[A, B](m1: Maybe[A], m2: Maybe[A => B]): Maybe[B] = m1 match {
-//    case Just(a) => m2 match {
-//      case Just(atob) => Just(atob(a))
-//      case Nothing => Nothing
+//    l.foldRight(Just(Nil): Maybe[List[A]]){(next,acc) =>
+//      flatMap(next)(a =>
+//        map(acc)(list =>
+//          a :: list))
 //    }
-//    case Nothing => Nothing
-//  }
+
   def ap[A, B](m1: Maybe[A], m2: Maybe[A => B]): Maybe[B] = m2 match {
     case Just(f) => map(m1)(f)
     case _ => Nothing

@@ -4,16 +4,37 @@ import scalaz._, Scalaz._
 
 object ValidationExercises {
 
-  def validateKey(key: String, input: Map[String, String]): ValidationNel[ErrorCode, String] = ???
+  def validateKey(key: String, input: Map[String, String]): ValidationNel[ErrorCode, String] = {
+    input.get(key) match {
+      case None => Failure(keyNotFound("key not found")).toValidationNel
+      case Some(value) => Success(value).toValidationNel
+    }
+  }
 
-  def nameValidation(name: String, label: String): ValidationNel[ErrorCode, String] = ???
+  def nameValidation(name: String, label: String): ValidationNel[ErrorCode, String] =
+    if (name.isEmpty) Failure(nameIsEmpty("Name is empty")).toValidationNel
+    else Success(name).toValidationNel
 
-  def passwordStrengthValidation(password: String): ValidationNel[ErrorCode, String] = ???
+  def passwordStrengthValidation(password: String): ValidationNel[ErrorCode, String] = {
+    val strengthRegex = "\\d".r
+    strengthRegex.findFirstIn(password) match {
+      case Some(_) => Success(password).toValidationNel
+      case None => Failure(passwordTooWeak).toValidationNel
+    }
+  }
 
-  def passwordLengthValidation(password: String): ValidationNel[ErrorCode, String] = ???
+  def passwordLengthValidation(password: String): ValidationNel[ErrorCode, String] = {
+    if (password.length > 8) Success(password).toValidationNel
+    else Failure(passwordTooWeak).toValidationNel
+  }
 
-  def validateInput(input: Map[String, String]): ValidationNel[ErrorCode, Person] = ???
-
+  def validateInput(input: Map[String, String]): ValidationNel[ErrorCode, Person] = {
+    for {
+      firstName <- validateKey("firstName", input)
+      lastName <- validateKey("lastName", input)
+      password <- validateKey("password", input)
+    } yield Person(firstName, lastName, password)
+  }
 
 }
 
