@@ -79,19 +79,8 @@ object OptionalExercises2 {
   val envs = Map("rea.com" -> "prod", "test.rea.com" -> "test", "amazon.com" -> "stage")
 
   // Should return the host string if successful or "couldn't resolve" if unsuccessful
-  //  def getEnvForHost(host: String): String = hosts.get(host) match {
-  //    case Some(host) => envs.get(host) match {
-  //      case Some(env) => env
-  //      case None => "couldn't resolve"
-  //    }
-  //    case None => "couldn't resolve"
-  //  }
-  //  def getFromEnv(host: String): Option[String] = envs.get(host)
-
-  def getEnvForHost(host: String): String = hosts.get(host).flatMap(envs.get).getOrElse("couldn't resolve")// match {
-//    case Some(env) => env
-//    case None => "couldn't resolve"
-//  }
+  def getEnvForHost(host: String): String =
+    hosts.get(host).flatMap(envs.get).getOrElse("couldn't resolve")
 
   // See how many ways you can implement this.
   // Will either return "Connected to <rea host>" or "not connected"
@@ -114,16 +103,10 @@ object OptionalExercises2 {
   /** 2 **/
   def connectToReaHostsOnly(host: String): String = hosts.get(host).flatMap(isReaHost).map(createConnection).getOrElse("not connected")
   def connectToReaHostsOnly2(host: String): String = hosts.get(host).filter(_.contains("rea")).map(createConnection).getOrElse("not connected")
-//  match {
-//    case Some(domain) => createConnection(domain)
-//    case None => "not connected"
-//  }
 
   def isReaHost(env: String): Option[String] = if (env contains "rea") Some(env) else None
 
   def createConnection(domain: String): String = s"connected to $domain"
-
-  //  def connectToReaHostsOnly(host: String): String = ???
 }
 
 /**
@@ -171,30 +154,17 @@ object OptionalExercises3 {
   }
 
   def map2[A, B, C](f: (A, B) => C)(m1: Maybe[A], m2: Maybe[B]): Maybe[C] = {
-//    for {
-//      a <- m1
-//      b <- m2
-//    } yield f(a,b)
-
 //    val function2: Maybe[B => C] = map(m1)(a => f(a, _))
-//    val function3: Maybe[Any] = map(m2)(b => function2(b))
+//    ap(m2, function2)
 
     flatMap(m1)(a => map(m2)(b => f(a,b)))
-
-    val maybe: Maybe[(A, B)] = flatMap(m1) {
-      a =>
-        flatMap(m2) {
-          b => Just((a,b))
-        }
-    }
-    map(maybe){case (a,b) => f(a,b)}
   }
 
   def sequence[A](l: List[Maybe[A]]): Maybe[List[A]] = {
     l.foldRight(Just(Nil): Maybe[List[A]])((maybeNext, maybeAcc) => {
       flatMap(maybeNext)(next =>
-        map(maybeAcc)(list =>
-          next :: list))
+        map(maybeAcc)(accList =>
+          next :: accList))
     })
   }
 //    def miniSequence(list: List[Maybe[A]], acc: Maybe[List[A]]): Maybe[List[A]] = {
@@ -204,12 +174,6 @@ object OptionalExercises3 {
 //      }
 //    }
 //    miniSequence(l, Just(Nil): Maybe[List[A]])
-
-//    l.foldRight(Just(Nil): Maybe[List[A]]){(next,acc) =>
-//      flatMap(next)(a =>
-//        map(acc)(list =>
-//          a :: list))
-//    }
 
   def ap[A, B](m1: Maybe[A], m2: Maybe[A => B]): Maybe[B] = m2 match {
     case Just(f) => map(m1)(f)
