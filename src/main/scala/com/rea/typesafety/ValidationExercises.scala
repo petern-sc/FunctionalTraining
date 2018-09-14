@@ -6,13 +6,13 @@ object ValidationExercises {
 
   def validateKey(key: String, input: Map[String, String]): ValidationNel[ErrorCode, String] = {
     input.get(key) match {
-      case None => Failure(keyNotFound("key not found")).toValidationNel
+      case None => Failure(keyNotFound(key)).toValidationNel
       case Some(value) => Success(value).toValidationNel
     }
   }
 
   def nameValidation(name: String, label: String): ValidationNel[ErrorCode, String] =
-    if (name.isEmpty) Failure(nameIsEmpty("Name is empty")).toValidationNel
+    if (name.isEmpty) Failure(nameIsEmpty(label)).toValidationNel
     else Success(name).toValidationNel
 
   def passwordStrengthValidation(password: String): ValidationNel[ErrorCode, String] = {
@@ -24,18 +24,31 @@ object ValidationExercises {
   }
 
   def passwordLengthValidation(password: String): ValidationNel[ErrorCode, String] = {
-    if (password.length > 8) Success(password).toValidationNel
-    else Failure(passwordTooWeak).toValidationNel
+    if (password.length > 7) Success(password).toValidationNel
+    else Failure(passwordTooShort).toValidationNel
   }
 
   def validateInput(input: Map[String, String]): ValidationNel[ErrorCode, Person] = {
-    for {
-      firstName <- validateKey("firstName", input)
-      lastName <- validateKey("lastName", input)
-      password <- validateKey("password", input)
-    } yield Person(firstName, lastName, password)
+    val firstName =
+      validateKey("firstName", input).flatMap(n => nameValidation(n, "firstName"))
+
+    val lastName =
+      validateKey("lastName", input).flatMap(n => nameValidation(n, "lastName"))
+
+    val password = validateKey("password", input).flatMap(p => {
+      passwordLengthValidation(p) <* passwordStrengthValidation(p)
+    })
+
+    (firstName |@| lastName |@| password) apply Person
+
+    val PersonFunc: String => String => String => Person = (Person.apply _).curried
+
+    password.ap(lastName.ap(firstName.map(PersonFunc)))
+    type V[A] = ValidationNel[ErrorCode,A]
+    Apply[V].apply3(firstName, lastName, password)(Person)
   }
 
+  def x[F[_],A,B](a:F[A], f1:A=>B)(implicit functor:Applicative[F]): F[B] = functor.map(a)(f1)
 }
 
 case class Person(firstName: String, lastName: String, password: String)

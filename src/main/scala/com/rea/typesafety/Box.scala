@@ -35,7 +35,8 @@ case class Box[A](get: A) {
   def map[B](f: A => B): Box[B] = Box(f(get))
 
   //Make it an Applicative*
-  def ap[B](bf: Box[A => B]): Box[B] = Box(bf.get(get))
+//  def ap[B](bf: Box[A => B]): Box[B] = Box(bf.get(get))
+  def ap[B](bf: Box[A => B]): Box[B] = map(bf.get)
 
   //Make it a Monad*
   def flatMap[B](f: A => Box[B]): Box[B] = f(get)
