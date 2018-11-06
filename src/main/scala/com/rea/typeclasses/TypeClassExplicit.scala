@@ -33,5 +33,4 @@ object TypeClassExplicit {
   def display[A](a: A)(show: Show[A]): Unit = {
     println(show.show(a))
   }
-
 }

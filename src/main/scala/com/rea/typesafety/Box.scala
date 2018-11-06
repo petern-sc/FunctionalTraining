@@ -32,7 +32,7 @@ package com.rea.typesafety
 
 case class Box[A](get: A) {
   //Make it a Functor*
-  def map[B](f: A => B): Box[B] = Box(f(get))
+  def map[B](f: A => B): Box[B] = flatMap(a => Box(f(a)))
 
   //Make it an Applicative*
 //  def ap[B](bf: Box[A => B]): Box[B] = Box(bf.get(get))
