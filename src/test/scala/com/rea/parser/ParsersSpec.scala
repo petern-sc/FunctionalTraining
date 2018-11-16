@@ -1,7 +1,7 @@
 package com.rea.parser
 
+import com.rea.parser.Parsers._
 import org.specs2.mutable.Specification
-import Parsers._
 
 class ParsersSpec extends Specification {
   "oneParser" in {
@@ -41,7 +41,12 @@ class ParsersSpec extends Specification {
   }
 
   "string must contain one and two" in {
-    oneParser.and(twoParser).parse("one and two") must beRight((1,2))
+    oneParser.and(twoParser).parse("one and two") must beRight((1, 2))
   }
+
+  "find name or message" in {
+    stringParser.or(Parser.pure("some message")).parse("peter") must beRight("some message")
+  }
+
 
 }

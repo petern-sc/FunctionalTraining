@@ -30,7 +30,7 @@ package com.rea.higherorder
   *
   * You may also run into these kinds of function definitions
   *
-  *   def someFunc[A, B](x: A, y: B): B
+  *   def someFunc(x: Int, y: Int): Int
   *
   *   Here in the square brackets, we're merely stating that there are two different
   *   possible types of generics in this function. Every A has to be the same type as
@@ -77,7 +77,8 @@ object ComposingExercises {
 
   // How do we convert (compose) f and g into a brand new function?
   def compose_[A, B, C](f: B => C, g: A => B): A => C = {
-    val x: A => C = a => f(g(a))
-    x
+//    val x: A => C = a => f(g(a))
+//    x
+    a => f(g(a))
   }
 }

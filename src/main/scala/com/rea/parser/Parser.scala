@@ -1,5 +1,14 @@
 package com.rea.parser
 
+import com.rea.parser.Parser._
+
+object Parser {
+  def pure[A](a: A): Parser[A] = new Parser[A] {
+    override def parse(s: String): Either[String, A] = Right(a)
+  }
+
+}
+
 trait Parser[A] {
 
   def parse(s: String): Either[String, A]
@@ -12,8 +21,19 @@ trait Parser[A] {
     }
   }
 
+  def mapNew[B](f: A => B): Parser[B] = {
+    // need something from B => Parser[B]
+    flatMap(a => pure(f(a)))
+  }
+
+  // flatMap(f: A => F[B])
+  // flatMap(a => pure(b))
+
+
   // implement map with flatmap and pure
   // need to implement a pure
+
+  //
 
   def or(parse2: Parser[A]): Parser[A] = {
     val self = this
@@ -26,13 +46,12 @@ trait Parser[A] {
     }
   }
 
-  def and[B](parse2: Parser[B]): Parser[(A,B)] = {
-    this.map2[B,(A,B)]((a,b) => (a,b), parse2)
-    // this.map2(
+  def and[B](parse2: Parser[B]): Parser[(A, B)] = {
+    this.map2[B, (A, B)]((a, b) => (a, b), parse2)
   }
 
-  def getFirst[B](parser1: Parser[A], parser2:Parser[B]) : Parser[A]= {
-    parser1.map2((a,_) => a, parser2)
+  def getFirst[B](parser1: Parser[A], parser2: Parser[B]): Parser[A] = {
+    parser1.map2((a, _: B) => a, parser2)
   }
 
   def flatMap[B](f: A => Parser[B]): Parser[B] = {
@@ -47,8 +66,8 @@ trait Parser[A] {
     }
   }
 
-  def map2[B,C](f: (A,B) => C, parse2: Parser[B]): Parser[C] = {
-    this.flatMap(a => parse2.map(b => f(a,b)))
+  def map2[B, C](f: (A, B) => C, parse2: Parser[B]): Parser[C] = {
+    this.flatMap(a => parse2.map(b => f(a, b)))
   }
 
 }
@@ -64,23 +83,21 @@ object Parsers {
       if (s contains "two") Right(2) else Left("could not find two")
   }
 
+  def stringParser: Parser[String] = new Parser[String] {
+    override def parse(s: String): Either[String, String] =
+      if (s contains "peter") Right("peter") else Left("could not find peter")
+  }
+
 
   def oneOrTwoParser: Parser[Int] = {
     val x: Parser[Int] = oneParser.or(twoParser)
     x
   }
 
-  def number2(p:Parser[Int]): Parser[String] = new Parser[String] {
-    override def parse(s: String): Either[String, String] = p.parse(s) match {
-      case Right(a) => Right(s"You have $a things")
-      case Left(b) => Left(b)
-    }
-  }
-
-  def number(p:Parser[Int]): Parser[String] = p.map(number => s"You have $number things")
+  def number(p: Parser[Int]): Parser[String] = p.mapNew(number => s"You have $number things")
 
 
-// F[A] -> A -> B: F[B]
-//        .map(number => s"You have $number things")
+  // F[A] -> (A -> B): F[B]
+  //        .map(number => s"You have $number things")
 
 }
